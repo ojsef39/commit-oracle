@@ -45,7 +45,7 @@ commit-oracle.sh
 
 ### With LazyGit
 
-To use Commit Oracle with LazyGit, add the following to your LazyGit config file (usually located at `~/.config/lazygit/config.yml`):
+To use Commit Oracle with LazyGit, add the following to your LazyGit config file (usually located at `~/.config/lazygit/config.yml` and for macos at `~/Library/Application\ Support/lazygit/config.yml`):
 
 ```yaml
 customCommands:
