@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Check if the current directory is a Git repository
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "This is not a Git repository."
+  exit 1
+fi
+
 # Check if there are any staged changes
 if git diff --cached --quiet; then
   echo "No staged changes detected. Nothing to commit."
