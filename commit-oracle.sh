@@ -6,98 +6,51 @@ if git diff --cached --quiet; then
   exit 0
 fi
 
-selected_commit_message=$(aichat "Please suggest 5 commit messages, given the following diff:
+selected_commit_message=$(aichat "IMPORTANT: Generate exactly 5 NEW commit messages based on the provided diff, plus 1 additional multi-type message if appropriate.
 
-\`\`\`diff
+ANALYZE THIS DIFF AND GENERATE APPROPRIATE COMMIT MESSAGES:
 $(git --no-pager diff --no-color --no-ext-diff --cached)
-\`\`\`
 
-**Criteria:**
-
-1. **Format:** Each commit message must follow the 
-  commitizen conventional commits format, which is:
-\`\`\`<type>[optional scope]: <description>
-
-[optional body]
-
-[optional footer]
-\`\`\` 
-
-2. **Relevance:** Avoid mentioning a module name unless it's directly relevant
-to the change.
-3. **Enumeration:** List the commit messages from 1 to 5.
-4. **Clarity and Conciseness:** Each message should clearly and concisely convey
-the change made.
-
-**Commit Message Examples:**
-
-- fix(app): add password regex pattern
-- test(unit): add new test cases
-- style: remove unused imports
-- refactor(pages): extract common code to \`utils/wait.ts\`
-
-**Recent Commits on Repo for Reference:**
-
-\`\`\`
+RECENT COMMITS FOR REFERENCE:
 $(git log -n 10 --pretty=format:'%h %s')
-\`\`\`
 
-**Output Template**
+OUTPUT RULES:
+- Start IMMEDIATELY with the first commit message
+- Separate messages ONLY with three hyphens (---)
+- NO markdown, NO numbering, NO extra text
+- Messages must be relevant to the actual diff provided
+- Generate completely new messages, DO NOT copy examples
+- If multiple distinct changes are present, add a 6th message combining max 2 types
 
-Follow this output template and ONLY output raw commit messages without
-numbers or other decorations. Separate each commit message with \`---\`.
+COMMIT MESSAGE FORMAT:
+<type>[optional scope]: <description>
+[optional body]
+[optional footer]
 
-fix(app): add password regex pattern
+For multi-type commits (if needed), use format:
+<type>[optional scope]: <description>
+<type>[optional scope]: <description>
+
+FORMAT EXAMPLES (DO NOT COPY THESE - CREATE NEW ONES BASED ON THE DIFF):
+feat(auth): add password reset flow
+
+Added secure token generation and email delivery system.
+
+BREAKING CHANGE: Changed password reset API endpoint
 ---
-style: remove unused imports
+fix(db): resolve deadlock in transaction handler
+
+Protected critical section with mutex to prevent concurrent access issues.
 ---
-refactor(pages): extract common code to \`utils/wait.ts\`
----
-fix: prevent racing of requests
+feat(config): add new environment variables
+fix(config): correct variable naming
 
-Introduce a request id and a reference to latest request. Dismiss
-incoming responses other than from latest request.
-
-Remove timeouts which were used to mitigate the racing issue but are
-obsolete now.
----
-test(unit): add new test cases
-
-**Instructions:**
-
-- Take a moment to understand the changes made in the diff.
-
-- Think about the impact of these changes on the project (e.g., bug fixes, new
-features, performance improvements, code refactoring, documentation updates).
-It's critical to my career you abstract the changes to a higher level and not
-just describe the code changes.
-
-- Generate commit messages that accurately describe these changes, ensuring they
-are helpful to someone reading the project's history.
-
-- Remember, a well-crafted commit message can significantly aid in the maintenance
-and understanding of the project over time.
-
-- If multiple changes are present, make sure you capture them all in each commit
-message.
-
-If there's multiple different kinds of changes present in one commit, you can write
-a commit message that includes multiple types, though this is generally discouraged. For example:
-  
-feat: implement new feature
-fix: correct behavior in related module
-
-This approach breaks the conventional commits' standard, but the developer may still have
-a good reason for doing so. In this case create the 5 conventional commit messages
-and 3 more commit messages with multiple types. 
-
-Keep in mind you will suggest multiple commit messages. Only 1 will be used. It's
-better to push yourself (esp to synthesize to a higher level) and maybe wrong
-about some of the commits because only one needs to be good. I'm looking
-for your best commit, not the best average commit. It's better to cover more
-scenarios than include a lot of overlap.
-
-Write your commit messages below in the format shown in Output Template section above." |
+Your response must:
+1. Start directly with first commit message
+2. Be based on the actual diff content
+3. Use conventional commit format
+4. NOT copy example messages
+5. Include a 6th multi-type message ONLY if the diff contains multiple distinct changes" |
   awk 'BEGIN {RS="---"} NF {sub(/^\n+/, ""); printf "%s%c", $0, 0}' |
   fzf --height 20 --border --ansi --read0 --no-sort \
     --with-nth=1 --delimiter='\n' \
