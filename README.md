@@ -48,11 +48,12 @@ commit-oracle.sh
 To use Commit Oracle with LazyGit, add the following to your LazyGit config file (usually located at `~/.config/lazygit/config.yml` and for macos at `~/Library/Application\ Support/lazygit/config.yml`):
 
 ```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/jesseduffield/lazygit/master/schema/config.json
 customCommands:
   - key: <c-g>
     description: Pick LLM commit
     loadingText: "waiting for LLM to generate commit messages..."
-    command: export EDITOR=nvim && commit-oracle.sh
+    command: clear && export EDITOR=nvim && commit-oracle.sh
     context: files
     subprocess: true
 ```
