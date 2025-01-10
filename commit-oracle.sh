@@ -12,32 +12,25 @@ if git diff --cached --quiet; then
   exit 0
 fi
 
-selected_commit_message=$(aichat "IMPORTANT: Generate exactly 5 NEW commit messages based on the provided diff, plus 1 additional multi-type message if appropriate.
+selected_commit_message=$(
+  aichat "IMPORTANT:
+1) Begin immediately with the first commit message—no greetings, no commentary.
+2) Your commit messages must be based on the DIFF alone; recent commits and examples are only for context. DO NOT copy or repeat them.
+3) Generate between 1 and 5 single-type commits based on the DIFF. If MULTIPLE distinct changes are present, add 1 additional multi-type commit (total up to 6). 
+4) Use only these types: feat, fix, docs, style, refactor, perf, test, chore, build, ci, revert.
+5) Separate each commit message ONLY with a line containing exactly three hyphens (---), no other text or spacing.
+6) For single-type commit: 
+   <type>(<optional-scope>): <short description> 
+   <optional-body>
+   <optional-footer>
+7) For a multi-type commit, format it as exactly two lines, each line a conventional commit header, for example:
+  <type>(<optional-scope>): <description>
+  <type>(<optional-scope>/<optional-scope>): <description>
+8) No numbering (e.g., no '1/5'), no extra text, no markdown, no commentary.
+9) Do not hallucinate or create low-quality commit-messages.
+  It is preferable to have less or no commit messages at all than to receive numerous low-quality ones.
 
-ANALYZE THIS DIFF AND GENERATE APPROPRIATE COMMIT MESSAGES:
-$(git --no-pager diff --no-color --no-ext-diff --cached)
-
-RECENT COMMITS FOR REFERENCE:
-$(git log -n 10 --pretty=format:'%h %s')
-
-OUTPUT RULES:
-- Start IMMEDIATELY with the first commit message
-- Separate messages ONLY with three hyphens (---)
-- NO markdown, NO numbering, NO extra text
-- Messages must be relevant to the actual diff provided
-- Generate completely new messages, DO NOT copy examples
-- If multiple distinct changes are present, add a 6th message combining max 2 types
-
-COMMIT MESSAGE FORMAT:
-<type>[optional scope]: <description>
-[optional body]
-[optional footer]
-
-For multi-type commits (if needed), use format:
-<type>[optional scope]: <description>
-<type>[optional scope]: <description>
-
-FORMAT EXAMPLES (DO NOT COPY THESE - CREATE NEW ONES BASED ON THE DIFF):
+EXAMPLE COMMITS:
 feat(auth): add password reset flow
 
 Added secure token generation and email delivery system.
@@ -51,17 +44,22 @@ Protected critical section with mutex to prevent concurrent access issues.
 feat(config): add new environment variables
 fix(config): correct variable naming
 
-Your response must:
-1. Start directly with first commit message
-2. Be based on the actual diff content
-3. Use conventional commit format
-4. NOT copy example messages
-5. Include a 6th multi-type message ONLY if the diff contains multiple distinct changes" |
-  awk 'BEGIN {RS="---"} NF {sub(/^\n+/, ""); printf "%s%c", $0, 0}' |
-  fzf --height 20 --border --ansi --read0 --no-sort \
-    --with-nth=1 --delimiter='\n' \
-    --preview 'echo {}' \
-    --preview-window=up:wrap)
+RECENT COMMITS:
+$(git log -n 10 --pretty=format:'%h %s')
+
+ANALYZE THIS DIFF:
+$(git --no-pager diff --no-color --no-ext-diff --cached)
+" |
+    awk 'BEGIN {RS="---"} NF {
+    sub(/^[[:space:]-]+/, "");  # remove leading spaces/dashes  
+    sub(/[[:space:]]+$/, "");   # remove trailing spaces  
+    printf "%s%c", $0, 0
+  }' |
+    fzf --height 20 --border --ansi --read0 --no-sort \
+      --with-nth=1 --delimiter='\n' \
+      --preview 'echo {}' \
+      --preview-window=up:wrap
+)
 
 if [ -z "$selected_commit_message" ]; then
   echo "No commit message selected."
